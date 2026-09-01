@@ -54,11 +54,17 @@ popd
     echo set "ENABLE_TOOL_SEARCH=false"
     echo set "CLAUDE_CODE_AUTO_COMPACT_WINDOW=!CONTEXT!"
     echo set "CLAUDE_CODE_MAX_CONTEXT_TOKENS=!CONTEXT!"
-    echo claude %%*
+    echo "%%USERPROFILE%%\.local\bin\claude.exe" %%*
 )
 :: The final line is the proof the whole file landed.
-findstr /c:"claude " "!LAUNCHER!.new" >nul || goto writefail
+findstr /c:"claude.exe" "!LAUNCHER!.new" >nul || goto writefail
 move /y "!LAUNCHER!.new" "!LAUNCHER!" >nul || goto writefail
+
+:: The official Windows installer does not put this on PATH, so do it here.
+:: Delegated to PowerShell rather than setx: setx silently truncates a PATH
+:: longer than 1024 characters. User scope only - no admin, nothing machine-wide.
+powershell -NoProfile -Command "$b = $env:USERPROFILE + '\.local\bin'; $p = [Environment]::GetEnvironmentVariable('PATH','User'); if (($p -split ';') -notcontains $b) { if ($p) { $n = $b + ';' + $p } else { $n = $b }; [Environment]::SetEnvironmentVariable('PATH', $n, 'User'); Write-Output ('Added ' + $b + ' to your user PATH - restart your terminal for it to take effect.') }"
+if errorlevel 1 echo Could not update PATH automatically - add !BIN! to your user PATH by hand.
 
 echo Installed !LAUNCHER! - run !NAME! for the local model; claude still uses the Anthropic API.
 exit /b 0

@@ -51,7 +51,17 @@ set "CLAUDE_CODE_EFFORT_LEVEL=max"
 set "ENABLE_TOOL_SEARCH=false"
 set "CLAUDE_CODE_AUTO_COMPACT_WINDOW=$ContextTokens"
 set "CLAUDE_CODE_MAX_CONTEXT_TOKENS=$ContextTokens"
-claude %*
+"%USERPROFILE%\.local\bin\claude.exe" %*
 "@ | Set-Content -Path $launcher -Encoding ascii
+
+# The official Windows installer does not put this on PATH, so do it here.
+# User scope only - no admin, no machine-wide change.
+$userPath = [Environment]::GetEnvironmentVariable('PATH', 'User')
+if (($userPath -split ';') -notcontains $bin) {
+    $newPath = if ($userPath) { "$bin;$userPath" } else { $bin }
+    [Environment]::SetEnvironmentVariable('PATH', $newPath, 'User')
+    $env:PATH = "$bin;$env:PATH"
+    Write-Output "Added $bin to your user PATH - restart your terminal for it to take effect."
+}
 
 Write-Output "Installed $launcher - run $LauncherName for the local model; claude still uses the Anthropic API."

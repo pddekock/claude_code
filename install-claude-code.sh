@@ -43,8 +43,12 @@ export CLAUDE_CODE_EFFORT_LEVEL="max"
 export ENABLE_TOOL_SEARCH="false"
 export CLAUDE_CODE_AUTO_COMPACT_WINDOW="$context"
 export CLAUDE_CODE_MAX_CONTEXT_TOKENS="$context"
-exec claude "\$@"
+exec "\$HOME/.local/bin/claude" "\$@"
 EOF
 chmod 700 "$launcher"
 
 echo "Installed $launcher - run $name for the local model; claude still uses the Anthropic API."
+case ":$PATH:" in
+    *":$HOME/.local/bin:"*) ;;
+    *) echo "note: $HOME/.local/bin is not on your PATH, so '$name' will not be found by name yet." ;;
+esac
